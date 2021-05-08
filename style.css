@@ -1,0 +1,173 @@
+
+/* :root{
+    --color-back:  rgb(74, 16, 168);
+    --color-header:  rgb(194, 98, 34);
+    */
+
+html{
+    background-image: linear-gradient(0deg, #db7fdb 30%, #97dae1 100%);
+
+}
+
+body{
+    background-position-x: center;
+    background-position-y: 5px;
+    background-image: url(img/pngegg.png);
+    background-repeat: no-repeat;
+  
+    font-family: "New Tegomin", sans-serif;
+    width: 1024px;
+    min-height: 1000px;
+    margin: 0 auto;
+}
+
+
+
+header{
+    margin-top: 5px;
+    min-height: 100px;
+    /* background-color: rgba(252, 181, 224, 0.582); */
+    background-image: linear-gradient(0deg, #db7fdb2a 0%, #97dae131 100%);
+    background-color: rgba(255, 255, 255, 0.473);
+    display: flex;
+    justify-content: space-between;
+    align-items: center ;
+    border: 1px solid white;
+    border-radius: 5px;
+    border-style: outset;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.26);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+   
+    /* position: fixed; */
+}
+
+header h1{
+    font-size:  4rem;
+    padding-bottom: 20px;
+}
+
+nav{
+    max-width: 150px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: right;
+}
+
+a{
+    text-decoration: none;
+    color: black;
+    padding: 10px 15px;
+    margin: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.514);
+    border-radius: 3px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.247);
+}
+
+a:hover{
+    background-color: rgba(255, 255, 255, 0.493);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.39);
+
+}
+
+
+.recipe{
+    display: flex;
+    justify-content: space-between;
+    min-height: 500px;
+    margin: 50px 0;
+}
+
+.recipe-container{
+    width: 500px;
+    background-color: rgba(255, 255, 255, 0.568);
+    border: 1px solid white;
+    border-radius: 5px;
+    border-style: outset;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.26);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(px);
+}
+
+.wrapper{
+font-size: 1.2rem;
+line-height: 3rem;
+
+}
+
+.wrapper label{
+    display: block;
+    text-align:center;
+}
+
+label input{
+    text-align: center;
+}
+
+
+
+.wrapper a{
+    display: block;
+    text-align: center;
+    font-size: 1.5rem;    
+}
+    
+
+.recipe-container h1, .recipe-container2 h1, .brew-container h1 {
+    line-height: 2.5rem;
+    font-size: 2rem;
+    color:rgb(0, 0, 0);
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.075);
+    background-image: linear-gradient(0deg, #db7fdb57 0%, #97dae15b 100%);
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.247);
+    text-align: center;
+    border-top: 1px solid rgba(128, 128, 128, 0.205);
+    border-bottom: 1px solid rgba(128, 128, 128, 0.212);
+}
+
+
+.recipe-container2{
+   
+    width: 512px;
+    background-color: rgba(255, 255, 255, 0.568);
+    border: 1px solid white;
+    border-radius: 5px;
+    border-style: outset;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.26);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.brew{
+    margin-bottom: 50px;
+    display: flex;
+    justify-content:right;
+    
+}
+
+
+.brew-container{
+   
+    min-height: 500px;
+    width: 512px;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.568);
+    border: 1px solid white;
+    border-radius: 5px;
+    border-style: outset;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.26);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    margin-bottom: 50px;
+    margin-left: 512px;
+}
+
+.hidden{
+    opacity: 0%;
+    transition: opacity 750ms ease-in-out;
+}
+
+.on{
+    opacity: 100%;
+    transition: opacity 750ms ease-in-out;
+}
