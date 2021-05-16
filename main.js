@@ -292,6 +292,11 @@ class Recipe {
     step = {
         doel: "",
         boodschap:["",""],
+        condities:{
+            time:0,
+            temp: 0,
+            button:false
+        },
         outputs:{
             kraan1: 0, 
             kraan2: 0, 
@@ -304,12 +309,12 @@ class Recipe {
             pomp: 0, 
             boodschap1: '', 
             boodschap2: '',
-            alarm: false
+            alarm: ""
         }
     };
 
     constructor(recept){
-        this.recept=recept;
+        this.recept = recept;
     };
 
     get aantalMout(){return this.recept.mouts.length};
@@ -331,9 +336,36 @@ class Recipe {
         lastStep.outputs.boodschap1 = lastStep.boodschap[0];
         lastStep.outputs.boodschap2 = lastStep.boodschap[1];
     };
+    // _maischTijd (i){
+    //     let same = this;
+    //     if(same.recept.cycli[i].tijd===same.control.standaardVoorsprongOpwarmTijd){
+    //         return {time:1}
+    //     }else{
+    //         return {time: (same.recept.cycli[i].tijd - same.control.standaardVoorsprongOpwarmTijd)
+    //         }}};
+
+
 
     createSteps(){
-        
+        //////////////////STEP1////////////////////////
+        this.steps.push({
+            doel:`Start brouwrecept: ${this.recept.naam}`,
+            boodschap:[`Start brouwrecept: ${this.recept.naam}`,`druk op de knop om te starten`], 
+            outputs: {
+            kraan1: 0, 
+            kraan2: 0, 
+            kraan3: 0, 
+            kraan4: 0,
+            kraan5: 0, 
+            vuur: 0, 
+            weerstand: 0, 
+            pomp: 0, 
+            boodschap1: "", 
+            boodschap2: ""
+            },
+            condities: {time:0,temp:0,button:true}
+        });
+
         //////////////////STEP1////////////////////////
         this.steps.push({
             doel:'vul opwarmtank',
@@ -350,7 +382,7 @@ class Recipe {
             boodschap1: "", 
             boodschap2: ""
             },
-            condities: ["button"]
+            condities: {time:0,temp:0,button:true}
         });
         
         this._setBoodschap(this.lastStep);
@@ -375,7 +407,7 @@ class Recipe {
             boodschap1: '',
             boodschap2: '',
           },
-          condities: ['button'],
+          condities: {time:0,temp:0,button:true},
         });
 
         this._setBoodschap(this.lastStep);
@@ -400,7 +432,7 @@ class Recipe {
             boodschap1: '',
             boodschap2: '',
           },
-          condities: ['button']
+          condities: {time:0,temp:0,button:true}
         });
 
         this._setBoodschap(this.lastStep);
@@ -423,7 +455,7 @@ class Recipe {
             boodschap1: '', 
             boodschap2: ''
             },
-            condities: [{temp: this.recept.cycli[0].temp}]
+            condities: {temp: Number(this.recept.cycli[0].temp),time:0,button:false}
         });
 
         this._setBoodschap(this.lastStep);
@@ -432,7 +464,7 @@ class Recipe {
 
         this.steps.push({
             doel:'Maischtank opwarmen',
-            boodschap:[`Zet kraan 2 open en de pomp aan`,`Blijf verwarmen`], 
+            boodschap:[`Zet kraan 2 open en de pomp aan`,`Blijf verwarmen tot ${+this.startTemperatuur + this.control.standaardOvershootMoutToevoeging}`], 
             outputs:
             {kraan1: 0, 
             kraan2: 1, 
@@ -445,279 +477,320 @@ class Recipe {
             boodschap1: '', 
             boodschap2: ''
             },
-            condities: [{temp:`${this.startTemperatuur} + ${this.standaardOvershootMoutToevoeging}`}]  // conditie = gewenste cyclitemp + standaard overshoot bij voor de mout wordt toegevoegd
+            condities: {temp: (+this.startTemperatuur + this.control.standaardOvershootMoutToevoeging),time:0,button:false}  // conditie = gewenste cyclitemp + standaard overshoot bij voor de mout wordt toegevoegd
             })
 
         this._setBoodschap(this.lastStep);
         
         //////////////////STEP6/////////////////////////
 
-        let newStep = {...this.step};
-        
-        newStep.doel = "Voeg mout toe";
-        newStep.boodschap = ["voeg mout toe", "Druk daarna op de knop"];
-        newStep.outputs.alarm = true; //alarm van 5seconden eerste keer
-        newStep.outputs.kraan2 = 1; 
-        newStep.outputs.pomp = 1; 
-        newStep.outputs.vuur = 2; 
-        newStep.outputs.weerstand = 1;
-        newStep.condities = ['button'];
-        
-        this.steps.push(newStep);
+        this.steps.push({
+            doel:'Voeg mout toe',
+            boodschap:[`Voeg mout toe`,`Druk daarna op de knop`], 
+            outputs:
+            {kraan1: 0, 
+            kraan2: 1, 
+            kraan3: 0, 
+            kraan4: 0,
+            kraan5: 0, 
+            vuur: 2, 
+            weerstand: 1, 
+            pomp: 1, 
+            boodschap1: '', 
+            boodschap2: '',
+            alarm:"Voeg mout toe"             //alarm van 5seconden eerste keer
+            },
+            condities: {button:true,time:0,temp:0}})
+
+
 
         this._setBoodschap(this.lastStep);
 
         //////////////////STEP7/////////////////////////
 
-        newStep = {...this.step};
-
-        newStep.doel = "temperatuur stabilisatie na toevoeging mout";
-        newStep.boodschap = ["Verwarm niet te fors, ga geleidelijk naar de gewenste temperatuur", `De gewenste temperatuur is ${this.startTemperatuur}°C`];
-        newStep.outputs.alarm = true; //alarm van 5seconden eerste keer
-        newStep.outputs.kraan2 = 1; 
-        newStep.outputs.pomp = 1; 
-        newStep.outputs.vuur = 1; 
-        newStep.outputs.weerstand = 1;
-        newStep.condities = [{temp:this.startTemperatuur}]; // conditie = start temperatuur cycli 1
-        
-        this.steps.push(newStep);
+        this.steps.push({
+            doel:'temperatuur stabilisatie na toevoeging mout',
+            boodschap:[`Verwarm niet te fors, ga geleidelijk naar de gewenste temperatuur`,`De gewenste temperatuur is ${this.startTemperatuur}°C`], 
+            outputs:
+            {kraan1: 0, 
+            kraan2: 1, 
+            kraan3: 0, 
+            kraan4: 0,
+            kraan5: 0, 
+            vuur: 1, 
+            weerstand: 1, 
+            pomp: 1, 
+            boodschap1: '', 
+            boodschap2: '',
+            alarm:"temperatuur stabilisatie"            //alarm van 5seconden eerste keer
+            },
+            condities: {temp:this.startTemperatuur,time:0,button:false}})
 
         this._setBoodschap(this.lastStep);
 
         //////////////////STEP8/////////////////////////
        
-        newStep = {...this.step};
-
-        newStep.doel = "Eerste meting zuurtegraad";
-        newStep.boodschap = ["Doe een meting van de zuurtegraad en pas aan met melkzuur of brouwzout, druk op de knop en de maischtijd gaat in", `De gewenste zuurtegraad ligt tussen 5.2pH en 5.6pH `];
-        newStep.outputs.alarm = false; //alarm van 5seconden eerste keer
-        newStep.outputs.kraan2 = 1; 
-        newStep.outputs.pomp = 1; 
-        newStep.outputs.vuur = 0; 
-        newStep.outputs.weerstand = 1;
-        newStep.condities = ['button'];
-        
-        this.steps.push(newStep);
+        this.steps.push({
+            doel:'Meting zuurtegraad',
+            boodschap:[`Doe een meting van de zuurtegraad en pas aan met melkzuur of brouwzout, druk op de knop en de maischtijd gaat in`,`De gewenste zuurtegraad ligt tussen 5.2pH en 5.6pH `], 
+            outputs:
+            {kraan1: 0, 
+            kraan2: 1, 
+            kraan3: 0, 
+            kraan4: 0,
+            kraan5: 0, 
+            vuur: 0, 
+            weerstand: 1, 
+            pomp: 1, 
+            boodschap1: '', 
+            boodschap2: '',
+            alarm:"Meet zuurtegraad"            //alarm van 5seconden eerste keer
+            },
+            condities: {time:0,temp:0,button:true}})
 
         this._setBoodschap(this.lastStep);
 
-        
         //////////////////STEP9/////////////////////////
         //////////// MAISCHSTAPPEN LOOP  ///////////////
 
 
         this.recept.cycli.forEach((cycli,i) => {
             
-            newStep = {...this.step};
-            
-            newStep.doel = `Maischstap ${i+1}a`;
-            newStep.boodschap = ["Hou temperatuur in de gaten", `De gewenste temperatuur is ${cycli.temp}°C`];
-            newStep.outputs.alarm = true; //alarm van 5seconden eerste keer
-            newStep.outputs.kraan2 = 1; 
-            newStep.outputs.pomp = 1; 
-            newStep.outputs.vuur = 0; 
-            newStep.outputs.weerstand = 1;
-            newStep.condities = [`timer - ${this.control.standaardVoorsprongOpwarmTijd}`];
-            
-            this.steps.push(newStep);
+            this.steps.push({
+                doel:`Maischstap ${i+1}a`,
+                boodschap:[`Hou temperatuur in de gaten`,`De gewenste temperatuur is ${cycli.temp}°C`], 
+                outputs:
+                {kraan1: 0, 
+                kraan2: 1, 
+                kraan3: 0, 
+                kraan4: 0,
+                kraan5: 0, 
+                vuur: 0, 
+                weerstand: 1, 
+                pomp: 1, 
+                boodschap1: '', 
+                boodschap2: '',
+                alarm:true              //alarm van 5seconden eerste keer
+                },
+                condities: {temp:0,button:false, time:cycli.tijd}})
     
             this._setBoodschap(this.lastStep);
     
             ///////////////////////////////////////////
     
-            newStep = {...this.step};
-            
-            newStep.doel = `Maischstap ${i+1}b`;
-            newStep.boodschap = ["Zet pomp uit, vuur op stand 2 en weerstand aan", `Druk dan op de knop, hierna nog ${this.control.standaardVoorsprongOpwarmTijd} min voor deze stap`];
-            newStep.outputs.alarm = false; //alarm van 5seconden eerste keer
-            newStep.outputs.kraan2 = 1; 
-            newStep.outputs.pomp = 0; 
-            newStep.outputs.vuur = 2; 
-            newStep.outputs.weerstand = 1;
-            newStep.condities = ['button'];
-            
-            this.steps.push(newStep);
+            this.steps.push({
+                doel:`Maischstap ${i+1}b`,
+                boodschap:[`Zet pomp uit, vuur op stand 2 en weerstand aan`,`Druk dan op de knop, hierna nog ${this.control.standaardVoorsprongOpwarmTijd} min voor deze stap`], 
+                outputs:
+                {kraan1: 0, 
+                kraan2: 1, 
+                kraan3: 0, 
+                kraan4: 0,
+                kraan5: 0, 
+                vuur: 2, 
+                weerstand: 1, 
+                pomp: 0, 
+                boodschap1: '', 
+                boodschap2: '',
+                alarm:false            //alarm van 5seconden eerste keer
+                },
+                condities: {time:0,temp:0,button:true}})
     
-            this._setBoodschap(this.lastStep);
+            this._setBoodschap(this.lastStep);           
 
             ///////////////////////////////////////////
     
-            newStep = {...this.step};
+            this.steps.push({
+                doel:`Maischstap ${i+1}c`,
+                boodschap:[`Zet pomp uit, vuur op stand 2 en weerstand aan`, `wacht op timer`], 
+                outputs:
+                {kraan1: 0, 
+                kraan2: 1, 
+                kraan3: 0, 
+                kraan4: 0,
+                kraan5: 0, 
+                vuur: 2, 
+                weerstand: 1, 
+                pomp: 0, 
+                boodschap1: '', 
+                boodschap2: '',
+                alarm:false            //alarm van 5seconden eerste keer
+                },
+                condities: {time:this.control.standaardVoorsprongOpwarmTijd,temp:0,button:false}})
     
-            newStep.doel = `Maischstap ${i+1}c`;
-            newStep.boodschap = ["Zet pomp uit, vuur op stand 2 en weerstand aan", `wacht op timer`];
-            newStep.outputs.alarm = false; //alarm van 5seconden eerste keer
-            newStep.outputs.kraan2 = 1; 
-            newStep.outputs.pomp = 0; 
-            newStep.outputs.vuur = 2; 
-            newStep.outputs.weerstand = 1;
-            newStep.condities = ['timer'];
-            
-            this.steps.push(newStep);
-    
-            this._setBoodschap(this.lastStep)
+            this._setBoodschap(this.lastStep);   
 
             ///////////////////////////////////////////
     
-            newStep = {...this.step};
-
-            newStep.doel = `Maischstap ${i+1}d voorbereiding volgende maischstap`;
-            newStep.boodschap = ["Zet pomp aan, verwarm niet te fors, ga geleidelijk naar de gewenste temperatuur", `de gewenste temperatuur is ${this.recept.cycli[i+1]?this.recept.cycli[i+1].temp:80}°C`];
-            newStep.outputs.alarm = true; //alarm van 5seconden eerste keer
-            newStep.outputs.kraan2 = 1; 
-            newStep.outputs.pomp = 1; 
-            newStep.outputs.vuur = 1; 
-            newStep.outputs.weerstand = 1;
-            newStep.condities = ['temp2 en 3'];
-            
-            this.steps.push(newStep);
+            this.steps.push({
+                doel:`Maischstap ${i+1}d voorbereiding volgende maischstap`,
+                boodschap:[`Zet pomp aan, verwarm niet te fors, ga geleidelijk naar de gewenste temperatuur`, `de gewenste temperatuur is ${this.recept.cycli[i+1]?this.recept.cycli[i+1].temp:80}°C`], 
+                outputs:
+                {kraan1: 0, 
+                kraan2: 1, 
+                kraan3: 0, 
+                kraan4: 0,
+                kraan5: 0, 
+                vuur: 1, 
+                weerstand: 1, 
+                pomp: 1, 
+                boodschap1: '', 
+                boodschap2: '',
+                alarm:true            //alarm van 5seconden eerste keer
+                },
+                condities: { temp: this.recept.cycli[i+1]?this.recept.cycli[i+1].temp:80, time:0,button:true}})
     
-            this._setBoodschap(this.lastStep)
-
+            this._setBoodschap(this.lastStep); 
+       
         });
 
         ////////////////// EINDE MAISCHLOOP/////////////////////////
 
         //////////////////STEP12/////////////////////////
 
-        newStep = { ...this.step };
+        this.steps.push({
+            doel:`Wort verpompen naar kooktank`,
+            boodschap:[`Zet pomp uit, sluit kraan 3 en 5,  open kraan 4`, `Zet hierna pomp aan, als de maischtank leeg is, zet pomp uit, druk knop`], 
+            outputs:
+            {kraan1: 0, 
+            kraan2: 1, 
+            kraan3: 0, 
+            kraan4: 1,
+            kraan5: 0, 
+            vuur: 2, 
+            weerstand: 1, 
+            pomp: 0, 
+            boodschap1: '', 
+            boodschap2: '',
+            alarm:true            //alarm van 5seconden eerste keer
+            },
+            condities: {button:true, temp:0,time:0}})
 
-        newStep.doel = `Wort verpompen naar kooktank`;
-        newStep.boodschap = [
-          `Zet pomp uit, sluit kraan 3 en 5,  open kraan 4`,
-          `Zet hierna pomp aan, als de maischtank leeg is, zet pomp uit, druk knop`,
-        ];
-        newStep.outputs.alarm = true; //alarm van 5seconden eerste keer
-        newStep.outputs.kraan2 = 1;
-        newStep.outputs.kraan3 = 0;
-        newStep.outputs.kraan4 = 1;
-        newStep.outputs.kraan5 = 0;
-        newStep.outputs.pomp = 0;
-        newStep.outputs.vuur = 2;
-        newStep.outputs.weerstand = 1;
-        newStep.condities = ['button'];
-
-        this.steps.push(newStep);
-
-        this._setBoodschap(this.lastStep);
+        this._setBoodschap(this.lastStep); 
 
         //////////////////STEP13/////////////////////////
 
-        newStep = { ...this.step };
+        this.steps.push({
+            doel:`spoel wort`,
+            boodschap:[
+                `Zet vuur, weerstand en pomp uit, sluit kraan 2 en 4, open kraan 1 en 3, zet kookvuur aan`,
+                `Zet hierna pomp aan, spoel met ${this.recept.spoelWater}L, zet pomp uit, druk knop`,
+              ], 
+            outputs:
+            {kraan1: 1, 
+            kraan2: 0, 
+            kraan3: 1, 
+            kraan4: 0,
+            kraan5: 0, 
+            vuur: 0,
+            kookVuur:0,
+            weerstand: 0, 
+            pomp: 0, 
+            boodschap1: '', 
+            boodschap2: '',
+            alarm:true            //alarm van 5seconden eerste keer
+            },
+            condities: {button:true, time:0, temp:0}})
 
-        newStep.doel = `spoel wort`;
-        newStep.boodschap = [
-          `Zet vuur, weerstand en pomp uit, sluit kraan 2 en 4, open kraan 1 en 3, zet kookvuur aan`,
-          `Zet hierna pomp aan, spoel met ${this.recept.spoelWater}L, zet pomp uit, druk knop`,
-        ];
-        newStep.outputs.alarm = true; //alarm van 5seconden eerste keer
-        newStep.outputs.kraan1 = 1;
-        newStep.outputs.kraan2 = 0;
-        newStep.outputs.kraan3 = 1;
-        newStep.outputs.kraan4 = 0;
-        newStep.outputs.pomp = 0;
-        newStep.outputs.vuur = 0;
-        newStep.outputs.kookVuur = 0;
-        newStep.outputs.weerstand = 0;
-        newStep.condities = ['button'];
-
-        this.steps.push(newStep);
-
-        this._setBoodschap(this.lastStep);
-
+        this._setBoodschap(this.lastStep); 
 
         //////////////////STEP14/////////////////////////
 
-        newStep = { ...this.step };
+        this.steps.push({
+            doel:`pomp maischvat 2de keer leeg`,
+            boodschap:[
+                `Vuur, weerstand en pomp staan uit, sluit kraan 1 en 3, open kraan 2 en 4`,
+                `Zet hierna pomp aan, als de maischtank leeg is, zet pomp uit, druk knop`,
+              ], 
+            outputs:
+            {kraan1: 0, 
+            kraan2: 1, 
+            kraan3: 0, 
+            kraan4: 1,
+            kraan5: 0, 
+            vuur: 0,
+            kookVuur:0,
+            weerstand: 0, 
+            pomp: 0, 
+            boodschap1: '', 
+            boodschap2: '',
+            alarm:true            //alarm van 5seconden eerste keer
+            },
+            condities: {button:true, time:0, temp:0}})
 
-        newStep.doel = `pomp maischvat 2de keer leeg`;
-        newStep.boodschap = [
-          `Vuur, weerstand en pomp staan uit, sluit kraan 1 en 3, open kraan 2 en 4`,
-          `Zet hierna pomp aan, als de maischtank leeg is, zet pomp uit, druk knop`,
-        ];
-        newStep.outputs.alarm = true; //alarm van 5seconden eerste keer
-        newStep.outputs.kraan1 = 0;
-        newStep.outputs.kraan2 = 1;
-        newStep.outputs.kraan3 = 0;
-        newStep.outputs.kraan4 = 1;
-        newStep.outputs.pomp = 0;
-        newStep.outputs.vuur = 0;
-
-        newStep.outputs.weerstand = 0;
-        newStep.condities = ['button'];
-
-        this.steps.push(newStep);
-
-        this._setBoodschap(this.lastStep);
-
+        this._setBoodschap(this.lastStep); 
 
         //////////////////STEP15/////////////////////////
 
-        newStep = { ...this.step };
+        this.steps.push({
+            doel:`wachten op koken`,
+            boodschap:[
+                `Wachten nu op het koken van de wort, dit kan tot 30min duren, check regelmatig, druk dan op knop om de kooktijd te laten in gaan`,
+                `Verwijder in tussentijd mout uit de maishtank `,
+              ], 
+            outputs:
+            {kraan1: 0, 
+            kraan2: 0, 
+            kraan3: 0, 
+            kraan4: 0,
+            kraan5: 0, 
+            vuur: 0,
+            kookVuur:0,
+            weerstand: 0, 
+            pomp: 0, 
+            boodschap1: '', 
+            boodschap2: '',
+            alarm:true            //alarm van 5seconden eerste keer
+            },
+            condities: {button:true, time:0, temp:0}})
 
-        newStep.doel = `wachten op koken`;
-        newStep.boodschap = [
-          `Wachten nu op het koken van de wort, dit kan tot 30min duren, check regelmatig, druk dan op knop om de kooktijd te laten in gaan`,
-          `Verwijder in tussentijd mout uit de maishtank `,
-        ];
-        newStep.outputs.alarm = true; //alarm van 5seconden eerste keer
-        newStep.outputs.kraan1 = 0;
-        newStep.outputs.kraan2 = 0;
-        newStep.outputs.kraan3 = 0;
-        newStep.outputs.kraan4 = 0;
-        newStep.outputs.pomp = 0;
-        newStep.outputs.vuur = 0;
-
-        newStep.outputs.weerstand = 0;
-        newStep.condities = ['button'];
-
-        this.steps.push(newStep);
-
-        this._setBoodschap(this.lastStep);
+        this._setBoodschap(this.lastStep); 
 
         //////////////////laatste stap/////////////////////////////
 
-        newStep = { ...this.step };
+        this.steps.push({
+            doel:`kookcyclus, hoppen`,
+            boodschap:[`${this.kookTekst}`,
+            `Verwijder in tussentijd mout uit de maishtank `
+          ], 
+            outputs:
+            {kraan1: 0, 
+            kraan2: 0, 
+            kraan3: 0, 
+            kraan4: 0,
+            kraan5: 0, 
+            vuur: 0,
+            kookVuur:0,
+            weerstand: 0, 
+            pomp: 0, 
+            boodschap1: '', 
+            boodschap2: '',
+            alarm:true            //alarm van 5seconden eerste keer
+            },
+            condities: {button:true, time:0, temp:0}
+        })
+            //////////////////// FINISHED ///////////////////////
+            this.process.totalSteps = this.totaalAantalStappen;
+    
+    }   
+}
+    
+    const receptTest2 = {
+        naam:"effort fort",
+        type:"tripel",
+        maischWater:50,
+        spoelWater:20,
+        kookTijd:80,
+        hops:[{soort:"Saaz",alfa:3.9,gewicht:150,in:5,uit:80},{soort:"Saaz",alfa:3.9,gewicht:50,in:15,uit:80},{soort:"Target",alfa:12.7,gewicht:100,in:75,uit:80},{soort:"Aramis",alfa:6.3,gewicht:60,in:75,uit:80}],
+        mouts:[{soort:"ECB3",gewicht:13.85},{soort:"gerst",gewicht:1}],
+        cycli:[{temp:62,tijd:45},{temp:72,tijd:20},{temp:78,tijd:5}] 
+    };
+    
+    const effortFort = new Recipe (receptTest2);
+    
+    effortFort.createSteps();
 
-        newStep.doel = `kookcyclus, hoppen`;
-        newStep.boodschap = [`${this.kookTekst}`,
-          `Verwijder in tussentijd mout uit de maishtank `,
-        ];
-        newStep.outputs.alarm = true; //alarm van 5seconden eerste keer
-        newStep.outputs.kraan1 = 0;
-        newStep.outputs.kraan2 = 0;
-        newStep.outputs.kraan3 = 0;
-        newStep.outputs.kraan4 = 0;
-        newStep.outputs.pomp = 0;
-        newStep.outputs.vuur = 0;
-
-        newStep.outputs.weerstand = 0;
-        newStep.condities = ['button'];
-
-        this.steps.push(newStep);
-
-        this._setBoodschap(this.lastStep);
-
-        //////////////////// FINISHED ///////////////////////
-        this.process.totalSteps = this.totaalAantalStappen;
-
-    }
-};
-
-const receptTest2 = {
-    naam:"effort fort",
-    type:"tripel",
-    maischWater:50,
-    spoelWater:20,
-    kookTijd:80,
-    hops:[{soort:"Saaz",alfa:3.9,gewicht:150,in:5,uit:80},{soort:"Saaz",alfa:3.9,gewicht:50,in:15,uit:80},{soort:"Target",alfa:12.7,gewicht:100,in:75,uit:80},{soort:"Aramis",alfa:6.3,gewicht:60,in:75,uit:80}],
-    mouts:[{soort:"ECB3",gewicht:13.85},{soort:"gerst",gewicht:1}],
-    cycli:[{temp:62,"tijd":45},{temp:72,tijd:20},{temp:78,tijd:5}] 
-};
-
-const effortFort = new Recipe (receptTest2);
-
-effortFort.createSteps();
+console.log(effortFort);
 
 
 //////////////////////////////////////////
@@ -745,4 +818,5 @@ startBrewingBtn.addEventListener('click', function(){
       .then(data=>data.json())
       .catch(error=>console.log(error));
       })
+      
   });
